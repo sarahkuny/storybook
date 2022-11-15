@@ -4,13 +4,15 @@ const dotenv = require('dotenv');
 const morgan = require('morgan')
 const { engine } = require('express-handlebars')
 const passport = require('passport')
+const passportConfig = require('./config/passport')
+const session = require('express-session')
 const connectDB = require('./config/db')
 
 //load config
 dotenv.config({ path: './config/config.env'})
 
 //passport config, passes the passport object from line 6 into the function (passport strategy)
-//require('./config/passport')(passport)
+passportConfig(passport)
 
 //calls connectDB from db.js - connects to database
 connectDB()
@@ -26,9 +28,16 @@ if(process.env.NODE_ENV === 'development'){
 app.engine('.hbs', engine({defaultLayout: 'main', extname: '.hbs'}));
 app.set('view engine', '.hbs')
 
+//Sessions
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false,
+}))
+
 //Passport middleware
-// app.use(passport.initialize);
-// app.use(passport.session)
+app.use(passport.initialize);
+app.use(passport.session)
 
 //Static Folder
 app.use(express.static(path.join(__dirname, 'public')))
